@@ -1,19 +1,24 @@
 import React from "react"
 import ReactDom from "react-dom"
-import Iscroll from "iscroll"
-import $ from "jquery"
 import Tween from './tween'
+import RCTG from 'react-addons-css-transition-group'
+
 
 function addClass ($ele, name) {
-  $ele.className += ` ${name}`;
+  if ($ele) {
+    $ele.className += ` ${name}`;
+  }
 }
 
 function removeClass ($ele, name) {
-  const className = $ele.className;
-  const classNameArray = className.split(' ');
-  const indexOfName = classNameArray.indexOf(name);
+  if ($ele) {
+    const className      = $ele.className;
+    const classNameArray = className.split(' ');
+    const indexOfName    = classNameArray.indexOf(name);
 
-  $ele.className = className.splice(indexOfName).join(' ')
+    classNameArray.splice(indexOfName, 1)
+    $ele.className = classNameArray.join(' ')
+  }
 }
 
 function setTranslateX ($ele, x) {
@@ -33,7 +38,12 @@ class Link extends React.Component {
   }
 
   render () {
-    return <a ref={ ele => this.ele = ele } onClick={this.onClick.bind(this)}className="link" href="#">{this.props.name}</a>
+    return (
+      <a ref={ ele => this.ele = ele }
+        onClick={this.onClick.bind(this)}
+        className="link" href="#"
+      >{this.props.name}</a>
+    )
   }
 }
 
@@ -54,8 +64,6 @@ class LinkGroup extends React.Component {
       $ele: null
     }
   }
-
-
 
   componentDidMount () {
     const { $wrapper, $ele } = this.refs
@@ -110,6 +118,7 @@ class LinkGroup extends React.Component {
   }
 
   onClick ($target) {
+    this.props.onClick && this.props.onClick($target);
     const wrapperRect = this.state.$wrapper.getBoundingClientRect()
     const targetRect  = $target.getBoundingClientRect()
 
@@ -127,14 +136,12 @@ class LinkGroup extends React.Component {
       result = Math.max(disToEleMid, this.state.translateX)
     }
 
-    console.log(result);
     this.updateTranslateX(this.state.translateX - result, 0.2)
-
   }
 
   render () {
     const result = this.props.links.map((link, i) => {
-      return <Link name={link.name} key={i} onClick={this.onClick.bind(this)}></Link>
+      return <Link current={this.props.current} name={link.name} key={i} onClick={this.onClick.bind(this)}></Link>
     })
 
     return (
@@ -147,14 +154,35 @@ class LinkGroup extends React.Component {
 
 
 export default class TabNavigator extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      current: null
+    }
+  }
+
+  onClick ($target) {
+    // 设置样式
+    removeClass(this.state.current, 'active')
+    addClass($target, 'active')
+    this.setState({
+      current: $target
+    })
+  }
+
+  componentDidMount () {
+    this.setState({
+      current: this.refs.title
+    })
+  }
   render () {
     return (
       <div className="react-navigator">
         <div className="title">
-          <Link name={this.props.title.name} key="title"></Link>
+          <Link current={this.state.current} refs="title" name={this.props.title.name} key="title" onClick={this.onClick.bind(this)}></Link>
           <span className="shadow"></span>
         </div>
-        <LinkGroup links={this.props.links}></LinkGroup>
+        <LinkGroup current={this.state.current} links={this.props.links} onClick={this.onClick.bind(this)}></LinkGroup>
       </div>
     )
   }

@@ -23,7 +23,8 @@
   "homepage": "https://github.com/AliasT/react-navigator#readme",
   "dependencies": {
     "react": "",
-    "react-dom": "^15.2.1",
+    "react-addons-css-transition-group": "^15.4.2",
+    "react-dom": "^15.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",

@@ -59,12 +59,15 @@
         display: inline-block;
         padding: 0 5px;
         position: relative;
-        &:after {
+        line-height: 40px;
+        -webkit-tap-highlight-color: transparent;
+
+        &.active:after {
           content: '';
           position: absolute;
           left: 5px;
           right: 5px;
-          bottom: -2px;
+          bottom: 0px;
           height: 2px;
           background: #fff;
         }
