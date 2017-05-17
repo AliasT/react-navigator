@@ -78,16 +78,12 @@ class LinkGroup extends React.Component {
     this.swiper.on('setTranslate', (swiper, translate) => {
       this.swiper.setWrapperTransition(300)
     })
+
     this.state.$wrapper = $wrapper;
     this.state.$ele     = $ele;
   }
 
-  updateTranslateX (x, timeout) {
-  }
-
   onClick ($target, i) {
-    // debugger
-    // return
     this.props.onClick && this.props.onClick($target);
     const wrapperRect = this.state.$wrapper.getBoundingClientRect()
     const targetRect  = $target.getBoundingClientRect()
@@ -105,6 +101,7 @@ class LinkGroup extends React.Component {
     } else if (disToEleMid < 0) {
       result = Math.max(disToEleMid, this.state.translateX)
     }
+
     const translateX = this.state.translateX
     this.swiper.setWrapperTranslate(translateX - result, 0, 0)
     this.state.translateX = translateX - result
