@@ -1,20 +1,19 @@
 import React from "react"
 import ReactDom from "react-dom"
-import Tween from './tween'
 import RCTG from 'react-addons-css-transition-group'
-
+import Swiper from 'swiper'
 
 function addClass ($ele, name) {
   if ($ele) {
-    $ele.className += ` ${name}`;
+    $ele.className += ` ${name}`
   }
 }
 
 function removeClass ($ele, name) {
   if ($ele) {
     const className      = $ele.className;
-    const classNameArray = className.split(' ');
-    const indexOfName    = classNameArray.indexOf(name);
+    const classNameArray = className.split(' ')
+    const indexOfName    = classNameArray.indexOf(name)
 
     classNameArray.splice(indexOfName, 1)
     $ele.className = classNameArray.join(' ')
@@ -68,56 +67,27 @@ class LinkGroup extends React.Component {
   componentDidMount () {
     const { $wrapper, $ele } = this.refs
 
+    this.swiper = new Swiper('.swiper-container', {
+      cssWidthAndHeight: false,
+      scrollContainer: true,
+      freeMode: true,
+      freeModeFluid: true,
+      slidesPerView:'auto'
+    })
+
+    this.swiper.on('setTranslate', (swiper, translate) => {
+      this.swiper.setWrapperTransition(300)
+    })
     this.state.$wrapper = $wrapper;
     this.state.$ele     = $ele;
-
-    const eleWidth     = $ele.offsetWidth;
-    const wrapperWidth = $wrapper.offsetWidth;
-    const maxDelta     = eleWidth - wrapperWidth;
-
-    var start      = { x: 0, y: 0 };
-    var end        = { x: 0, y: 0 };
-
-    $ele.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      start.x = touch.pageX;
-      end.x = start.x;
-    })
-
-    $ele.addEventListener('touchmove', (e) => {
-      end.x = e.touches[0].pageX;
-      const deltaX = end.x - start.x;
-      setTranslateX($wrapper, this.state.translateX + deltaX);
-    })
-
-    // 如果左右超出，产生一个动画回弹
-    $ele.addEventListener('touchend', (e) => {
-      const deltaX = end.x - start.x
-      this.state.translateX += deltaX;
-
-      var x = null;
-
-      if (this.state.translateX >= 0) { x = 0; }
-      else if (this.state.translateX <= maxDelta) { x = maxDelta; }
-
-      if (x != null && deltaX != 0) {
-        this.updateTranslateX(x, 0.5)
-      }
-
-      start.x = end.x;
-    })
   }
 
   updateTranslateX (x, timeout) {
-    var o = { x: this.state.translateX };
-    Tween.to(o, timeout, { x: x, onUpdate: () => {
-      setTranslateX(this.state.$wrapper, o.x);
-    }, onComplete:  () => {
-      this.state.translateX = x;
-    }})
   }
 
-  onClick ($target) {
+  onClick ($target, i) {
+    // debugger
+    // return
     this.props.onClick && this.props.onClick($target);
     const wrapperRect = this.state.$wrapper.getBoundingClientRect()
     const targetRect  = $target.getBoundingClientRect()
@@ -135,18 +105,25 @@ class LinkGroup extends React.Component {
     } else if (disToEleMid < 0) {
       result = Math.max(disToEleMid, this.state.translateX)
     }
-
-    this.updateTranslateX(this.state.translateX - result, 0.2)
+    const translateX = this.state.translateX
+    this.swiper.setWrapperTranslate(translateX - result, 0, 0)
+    this.state.translateX = translateX - result
   }
 
   render () {
     const result = this.props.links.map((link, i) => {
-      return <Link current={this.props.current} name={link.name} key={i} onClick={this.onClick.bind(this)}></Link>
+      return (
+        <div key={i}  className="swiper-slide">
+          <Link current={this.props.current} name={link.name} onClick={ e=>this.onClick(e, i)}></Link>
+        </div>
+      )
     })
 
     return (
-      <div ref="$ele" className="sub-menus flex-item">
-        <div ref="$wrapper">{ result }</div>
+      <div ref="$ele" className="sub-menus container-scroll flex-item swiper-container">
+        <div ref="$wrapper" className="swiper-wrapper">
+          { result }
+        </div>
       </div>
     )
   }
@@ -175,6 +152,7 @@ export default class TabNavigator extends React.Component {
       current: this.refs.title
     })
   }
+
   render () {
     return (
       <div className="react-navigator">
